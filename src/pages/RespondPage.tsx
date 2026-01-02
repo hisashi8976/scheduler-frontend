@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
+import '../styles/RespondPage.css'
 
 type Availability = 'OK' | 'MAYBE' | 'NG'
 
@@ -55,6 +56,7 @@ const parseEventResponse = (value: unknown): EventResponse | null => {
 
 function RespondPage() {
   const { publicId } = useParams()
+  const location = useLocation()
   const encodedPublicId = publicId ? encodeURIComponent(publicId) : ''
   const [eventData, setEventData] = useState<EventResponse | null>(null)
   const [fetchError, setFetchError] = useState<SubmitError | null>(null)
@@ -65,7 +67,10 @@ function RespondPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [submitError, setSubmitError] = useState<SubmitError | null>(null)
   const [editUrl, setEditUrl] = useState<string | null>(null)
-  const [copyMessage, setCopyMessage] = useState<string | null>(null)
+  const [editCopyMessage, setEditCopyMessage] = useState<string | null>(null)
+  const [eventIdCopyMessage, setEventIdCopyMessage] = useState<string | null>(
+    null
+  )
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -140,16 +145,28 @@ function RespondPage() {
   }, [publicId])
 
   useEffect(() => {
-    if (!copyMessage) {
+    if (!editCopyMessage) {
       return
     }
     const timeout = window.setTimeout(() => {
-      setCopyMessage(null)
+      setEditCopyMessage(null)
     }, 3000)
     return () => {
       window.clearTimeout(timeout)
     }
-  }, [copyMessage])
+  }, [editCopyMessage])
+
+  useEffect(() => {
+    if (!eventIdCopyMessage) {
+      return
+    }
+    const timeout = window.setTimeout(() => {
+      setEventIdCopyMessage(null)
+    }, 3000)
+    return () => {
+      window.clearTimeout(timeout)
+    }
+  }, [eventIdCopyMessage])
 
   const handleAvailabilityChange = (
     candidateSlotId: number,
@@ -216,32 +233,113 @@ function RespondPage() {
     }
   }
 
-  const handleCopy = async () => {
+  const handleCopyEditUrl = async () => {
     if (!editUrl) {
       return
     }
     try {
       await navigator.clipboard.writeText(editUrl)
-      setCopyMessage('コピーしました。')
+      setEditCopyMessage('コピーしました。')
     } catch {
-      setCopyMessage('コピーに失敗しました。')
+      setEditCopyMessage('コピーに失敗しました。')
     }
   }
 
+  const handleCopyEventId = async () => {
+    if (!publicId) {
+      return
+    }
+    try {
+      await navigator.clipboard.writeText(publicId)
+      setEventIdCopyMessage('コピーしました。')
+    } catch {
+      setEventIdCopyMessage('コピーに失敗しました。')
+    }
+  }
+
+  const isCurrentPath = (path: string) => location.pathname === path
+
   return (
-    <main>
+    <main className="respond-page">
       {!publicId ? (
         <>
           <h1>エラー</h1>
           <p>イベントIDが指定されていません。</p>
         </>
       ) : (
-        <>
-          <h1>回答ページ</h1>
-          <p>イベントID: {publicId}</p>
+        <div className="respond-page__container">
+          <nav className="respond-page__tabs" aria-label="イベントナビゲーション">
+            <Link
+              className={`respond-page__tab ${
+                isCurrentPath(`/e/${encodedPublicId}`)
+                  ? 'respond-page__tab--active'
+                  : ''
+              }`}
+              to={`/e/${encodedPublicId}`}
+              aria-current={
+                isCurrentPath(`/e/${encodedPublicId}`) ? 'page' : undefined
+              }
+            >
+              回答
+            </Link>
+            <Link
+              className={`respond-page__tab ${
+                isCurrentPath(`/e/${encodedPublicId}/results`)
+                  ? 'respond-page__tab--active'
+                  : ''
+              }`}
+              to={`/e/${encodedPublicId}/results`}
+              aria-current={
+                isCurrentPath(`/e/${encodedPublicId}/results`)
+                  ? 'page'
+                  : undefined
+              }
+            >
+              結果
+            </Link>
+            <Link
+              className={`respond-page__tab ${
+                isCurrentPath(`/e/${encodedPublicId}/admin`)
+                  ? 'respond-page__tab--active'
+                  : ''
+              }`}
+              to={`/e/${encodedPublicId}/admin`}
+              aria-current={
+                isCurrentPath(`/e/${encodedPublicId}/admin`)
+                  ? 'page'
+                  : undefined
+              }
+            >
+              主催者
+            </Link>
+          </nav>
+          <header className="respond-page__header">
+            <div>
+              <h1 className="respond-page__title">回答</h1>
+              <p className="respond-page__subtitle">
+                出欠回答を入力してください。
+              </p>
+            </div>
+            <div className="respond-page__event-id">
+              <span>イベントID</span>
+              <code>{publicId}</code>
+              <button
+                type="button"
+                className="respond-page__secondary-button"
+                onClick={handleCopyEventId}
+              >
+                コピー
+              </button>
+              {eventIdCopyMessage && (
+                <span className="respond-page__copy-message">
+                  {eventIdCopyMessage}
+                </span>
+              )}
+            </div>
+          </header>
           {isLoading && <p>読み込み中...</p>}
           {fetchError && (
-            <section role="alert">
+            <section role="alert" className="respond-page__alert">
               <h2>取得エラー</h2>
               <p>
                 status: {fetchError.status ?? 'unknown'} / message:{' '}
@@ -250,96 +348,141 @@ function RespondPage() {
             </section>
           )}
           {eventData && (
-            <section>
-              <h2>{eventData.title}</h2>
-              <p>{eventData.description}</p>
-              <label htmlFor="respondent-name">回答者名</label>
-              <input
-                id="respondent-name"
-                type="text"
-                aria-required="true"
-                value={respondentName}
-                onChange={(event) => setRespondentName(event.target.value)}
-              />
-              <h3>候補一覧</h3>
-              {eventData.candidates.length === 0 ? (
-                <p>候補日時が登録されていません。</p>
-              ) : (
-                <ul>
-                  {eventData.candidates.map((candidate, index) => (
-                    <li key={candidate.candidateSlotId}>
-                      <div>候補 {index + 1}</div>
-                      <div>
-                        {formatDateTime(candidate.startAt)} -{' '}
-                        {formatDateTime(candidate.endAt)}
-                      </div>
-                      <label htmlFor={`availability-${candidate.candidateSlotId}`}>
-                        出欠
-                      </label>
-                      <select
-                        id={`availability-${candidate.candidateSlotId}`}
-                        value={
-                          availabilityById[candidate.candidateSlotId] ?? 'MAYBE'
-                        }
-                        onChange={(event) =>
-                          handleAvailabilityChange(
-                            candidate.candidateSlotId,
-                            event.target.value as Availability
-                          )
-                        }
-                      >
-                        <option value="OK">OK</option>
-                        <option value="MAYBE">MAYBE</option>
-                        <option value="NG">NG</option>
-                      </select>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isSubmitting || !respondentName.trim()}
-              >
-                {isSubmitting ? '送信中...' : '送信'}
-              </button>
-              {submitError && (
-                <section role="alert">
-                  <h3>送信エラー</h3>
-                  <p>
-                    status: {submitError.status ?? 'unknown'} / message:{' '}
-                    {submitError.message}
-                  </p>
-                </section>
-              )}
+            <>
+              <section className="respond-page__card">
+                <h2 className="respond-page__card-title">{eventData.title}</h2>
+                <p className="respond-page__card-description">
+                  {eventData.description}
+                </p>
+              </section>
+              <section className="respond-page__section">
+                <h3 className="respond-page__section-title">1) 回答者名</h3>
+                <label className="respond-page__label" htmlFor="respondent-name">
+                  回答者名
+                </label>
+                <input
+                  id="respondent-name"
+                  className="respond-page__input"
+                  type="text"
+                  aria-required="true"
+                  placeholder="お名前を入力してください"
+                  value={respondentName}
+                  onChange={(event) => setRespondentName(event.target.value)}
+                />
+              </section>
+              <section className="respond-page__section">
+                <h3 className="respond-page__section-title">2) 候補を選ぶ</h3>
+                {eventData.candidates.length === 0 ? (
+                  <p>候補日時が登録されていません。</p>
+                ) : (
+                  <div className="respond-page__table-wrapper">
+                    <table className="respond-page__table">
+                      <thead>
+                        <tr>
+                          <th scope="col">候補</th>
+                          <th scope="col">日時</th>
+                          <th scope="col">出欠</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {eventData.candidates.map((candidate, index) => (
+                          <tr key={candidate.candidateSlotId}>
+                            <td>候補 {index + 1}</td>
+                            <td>
+                              {formatDateTime(candidate.startAt)} -{' '}
+                              {formatDateTime(candidate.endAt)}
+                            </td>
+                            <td>
+                              <label
+                                className="respond-page__sr-only"
+                                htmlFor={`availability-${candidate.candidateSlotId}`}
+                              >
+                                候補 {index + 1} の出欠
+                              </label>
+                              <select
+                                id={`availability-${candidate.candidateSlotId}`}
+                                className="respond-page__select"
+                                value={
+                                  availabilityById[candidate.candidateSlotId] ??
+                                  'MAYBE'
+                                }
+                                onChange={(event) =>
+                                  handleAvailabilityChange(
+                                    candidate.candidateSlotId,
+                                    event.target.value as Availability
+                                  )
+                                }
+                              >
+                                <option value="OK">OK</option>
+                                <option value="MAYBE">MAYBE</option>
+                                <option value="NG">NG</option>
+                              </select>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+              <section className="respond-page__section">
+                <h3 className="respond-page__section-title">3) 送信</h3>
+                <button
+                  type="button"
+                  className="respond-page__primary-button"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting || !respondentName.trim()}
+                >
+                  {isSubmitting ? '送信中...' : '送信'}
+                </button>
+                {submitError && (
+                  <section role="alert" className="respond-page__alert">
+                    <h3>送信エラー</h3>
+                    <p>
+                      status: {submitError.status ?? 'unknown'} / message:{' '}
+                      {submitError.message}
+                    </p>
+                  </section>
+                )}
+              </section>
               {editUrl && (
-                <section>
+                <section className="respond-page__highlight">
                   <h3>編集URL</h3>
-                  <p>{editUrl}</p>
-                  <button type="button" onClick={handleCopy}>
-                    コピー
-                  </button>
-                  {copyMessage && <p>{copyMessage}</p>}
+                  <p className="respond-page__highlight-text">
+                    このリンクは再編集に必要。控えてください。
+                  </p>
+                  <div className="respond-page__highlight-actions">
+                    <code className="respond-page__highlight-code">
+                      {editUrl}
+                    </code>
+                    <div className="respond-page__highlight-buttons">
+                      <button
+                        type="button"
+                        className="respond-page__secondary-button"
+                        onClick={handleCopyEditUrl}
+                      >
+                        コピー
+                      </button>
+                      <a
+                        className="respond-page__link-button"
+                        href={editUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        開く
+                      </a>
+                    </div>
+                  </div>
+                  {editCopyMessage && (
+                    <p className="respond-page__copy-message">
+                      {editCopyMessage}
+                    </p>
+                  )}
                 </section>
               )}
-            </section>
+            </>
           )}
-          <nav>
-            <ul>
-              <li>
-                <Link to={`/e/${encodedPublicId}`} aria-current="page">
-                  回答
-                </Link>
-              </li>
-              <li>
-                <Link to={`/e/${encodedPublicId}/results`}>結果</Link>
-              </li>
-              <li>
-                <Link to={`/e/${encodedPublicId}/admin`}>主催者</Link>
-              </li>
-            </ul>
-          </nav>
-        </>
+        </div>
       )}
     </main>
   )
