@@ -1,5 +1,13 @@
 import { Link, useParams } from 'react-router-dom'
 
+/**
+ * Renders a results page that displays the current route's `publicId` and navigation links for the event.
+ *
+ * The component reads `publicId` from route parameters and renders a heading, the event ID, placeholder result text,
+ * and links to the event's answer, results, and admin pages.
+ *
+ * @returns A JSX element representing the results page UI
+ */
 function ResultsPage() {
   const { publicId } = useParams()
 

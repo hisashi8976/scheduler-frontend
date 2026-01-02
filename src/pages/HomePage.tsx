@@ -1,6 +1,13 @@
 import { FormEvent, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+/**
+ * Render the home page with a form to enter and submit a public ID.
+ *
+ * When the form is submitted with a non-empty public ID, navigates to `/e/{encodedPublicId}`.
+ *
+ * @returns The rendered Home page element containing the input form and submit control.
+ */
 function HomePage() {
   const [publicId, setPublicId] = useState('')
   const navigate = useNavigate()

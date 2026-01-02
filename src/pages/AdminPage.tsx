@@ -1,5 +1,12 @@
 import { Link, useParams } from 'react-router-dom'
 
+/**
+ * Renders the event organizer admin page using the route parameter `publicId`.
+ *
+ * Displays the event ID, an admin key input, and navigation links to the event, results, and admin subpages; `publicId` is read from route parameters.
+ *
+ * @returns The React element for the admin interface of the specified event.
+ */
 function AdminPage() {
   const { publicId } = useParams()
 

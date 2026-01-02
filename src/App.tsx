@@ -6,6 +6,19 @@ import HomePage from './pages/HomePage'
 import RespondPage from './pages/RespondPage'
 import ResultsPage from './pages/ResultsPage'
 
+/**
+ * Defines the application's top-level route configuration.
+ *
+ * Renders a Routes element with the following route mappings:
+ * - "/" → HomePage
+ * - "/e/:publicId" → RespondPage
+ * - "/e/:publicId/results" → ResultsPage
+ * - "/e/:publicId/admin" → AdminPage
+ * - "/e/:publicId/edit/:editKey" → EditPage
+ * - "*" → redirects to "/" (replace history entry)
+ *
+ * @returns The root JSX element that mounts the app's router and route tree.
+ */
 function App() {
   return (
     <Routes>

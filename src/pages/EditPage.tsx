@@ -1,5 +1,10 @@
 import { Link, useParams } from 'react-router-dom'
 
+/**
+ * Render the edit page for an event, displaying the route parameters `publicId` and `editKey` and links to the answer, results, and admin pages.
+ *
+ * @returns The JSX element for the edit page.
+ */
 function EditPage() {
   const { publicId, editKey } = useParams()
 

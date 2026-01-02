@@ -1,5 +1,13 @@
 import { Link, useParams } from 'react-router-dom'
 
+/**
+ * Renders the event response page using the route parameter `publicId`.
+ *
+ * Displays the event ID, a placeholder description for the response form,
+ * and navigation links to the response, results, and admin pages for the event.
+ *
+ * @returns A JSX element representing the respond page for the current event.
+ */
 function RespondPage() {
   const { publicId } = useParams()
 
