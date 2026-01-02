@@ -8,14 +8,28 @@ import ResultsPage from './pages/ResultsPage'
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/e/:publicId" element={<RespondPage />} />
-      <Route path="/e/:publicId/results" element={<ResultsPage />} />
-      <Route path="/e/:publicId/admin" element={<AdminPage />} />
-      <Route path="/e/:publicId/edit/:editKey" element={<EditPage />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <div className="app-shell">
+      <header className="app-header">
+        <div>
+          <p className="app-eyebrow">Schedule Sync</p>
+          <p className="app-title">スマートなスケジュール調整</p>
+        </div>
+        <div className="app-status">
+          <span className="status-dot" aria-hidden="true" />
+          <span>Planning in motion</span>
+        </div>
+      </header>
+      <div className="app-content">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/e/:publicId" element={<RespondPage />} />
+          <Route path="/e/:publicId/results" element={<ResultsPage />} />
+          <Route path="/e/:publicId/admin" element={<AdminPage />} />
+          <Route path="/e/:publicId/edit/:editKey" element={<EditPage />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
+    </div>
   )
 }
 
