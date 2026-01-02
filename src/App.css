@@ -63,10 +63,10 @@
 
 main {
   background: rgba(255, 255, 255, 0.85);
-  border: 2px solid #fde68a;
-  border-radius: 28px;
+  border: 2px solid var(--color-accent-yellow);
+  border-radius: var(--border-radius-large);
   padding: clamp(1.5rem, 4vw, 3rem);
-  box-shadow: 0 24px 40px rgba(59, 130, 246, 0.15);
+  box-shadow: var(--shadow-surface);
   backdrop-filter: blur(12px);
   color: var(--color-text-dark);
 }

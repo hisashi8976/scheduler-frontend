@@ -15,7 +15,9 @@
   --color-text-muted: #92400e;
   --border-radius-pill: 999px;
   --border-radius-medium: 16px;
+  --border-radius-large: 28px;
   --shadow-status: 0 12px 24px rgba(249, 115, 22, 0.2);
+  --shadow-surface: 0 24px 40px rgba(59, 130, 246, 0.15);
 }
 
 a {
