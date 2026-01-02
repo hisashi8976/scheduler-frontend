@@ -196,8 +196,16 @@ function RespondPage() {
         setSubmitError({ status: response.status, message })
         return
       }
-      const body = (await response.json()) as { editUrl?: string }
-      setEditUrl(body.editUrl ?? '')
+      const body = await response.json()
+      if (typeof body === 'object' && body !== null) {
+        const nextEditUrl =
+          'editUrl' in body && typeof body.editUrl === 'string'
+            ? body.editUrl
+            : ''
+        setEditUrl(nextEditUrl)
+      } else {
+        setEditUrl('')
+      }
     } catch (error) {
       setSubmitError({
         status: null,
