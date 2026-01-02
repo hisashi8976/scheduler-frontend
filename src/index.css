@@ -2,12 +2,20 @@
   font-family: 'M PLUS Rounded 1c', 'Nunito', 'Segoe UI', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #1f2937;
+  color: var(--color-text-dark);
   background-color: #fff7ed;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  --color-primary-orange: #f97316;
+  --color-primary-pink: #ec4899;
+  --color-accent-yellow: #fde68a;
+  --color-text-dark: #1f2937;
+  --color-text-muted: #92400e;
+  --border-radius-pill: 999px;
+  --border-radius-medium: 16px;
+  --shadow-status: 0 12px 24px rgba(249, 115, 22, 0.2);
 }
 
 a {
@@ -15,7 +23,7 @@ a {
 }
 
 a:hover {
-  color: #f97316;
+  color: var(--color-primary-orange);
 }
 
 body {
