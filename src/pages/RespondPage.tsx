@@ -274,7 +274,7 @@ function RespondPage() {
                         {formatDateTime(candidate.endAt)}
                       </div>
                       <label htmlFor={`availability-${candidate.candidateSlotId}`}>
-                        Availability
+                        出欠
                       </label>
                       <select
                         id={`availability-${candidate.candidateSlotId}`}
