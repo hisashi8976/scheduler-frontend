@@ -4,7 +4,17 @@ import { Link, useParams } from 'react-router-dom'
 function AdminPage() {
   const { publicId } = useParams()
   const [adminKey, setAdminKey] = useState('')
-  const encodedPublicId = publicId ? encodeURIComponent(publicId) : ''
+
+  if (!publicId) {
+    return (
+      <main>
+        <h1>エラー</h1>
+        <p>イベントIDが指定されていません。</p>
+      </main>
+    )
+  }
+
+  const encodedPublicId = encodeURIComponent(publicId)
 
   return (
     <main>

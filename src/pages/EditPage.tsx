@@ -2,7 +2,17 @@ import { Link, useParams } from 'react-router-dom'
 
 function EditPage() {
   const { publicId, editKey } = useParams()
-  const encodedPublicId = publicId ? encodeURIComponent(publicId) : ''
+
+  if (!publicId) {
+    return (
+      <main>
+        <h1>エラー</h1>
+        <p>イベントIDが指定されていません。</p>
+      </main>
+    )
+  }
+
+  const encodedPublicId = encodeURIComponent(publicId)
 
   return (
     <main>
