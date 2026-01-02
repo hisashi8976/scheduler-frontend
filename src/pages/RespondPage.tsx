@@ -32,6 +32,7 @@ function RespondPage() {
   const [submitError, setSubmitError] = useState<SubmitError | null>(null)
   const [editUrl, setEditUrl] = useState<string | null>(null)
   const [copyMessage, setCopyMessage] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (!publicId) {
@@ -98,12 +99,13 @@ function RespondPage() {
   }
 
   const handleSubmit = async () => {
-    if (!eventData) {
+    if (!eventData || !respondentName.trim()) {
       return
     }
     try {
       setSubmitError(null)
       setEditUrl(null)
+      setIsSubmitting(true)
       const response = await fetch(
         `/api/events/${encodedPublicId}/responses`,
         {
@@ -138,6 +140,8 @@ function RespondPage() {
         status: null,
         message: error instanceof Error ? error.message : 'Unexpected error.',
       })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -215,8 +219,12 @@ function RespondPage() {
                   </li>
                 ))}
               </ul>
-              <button type="button" onClick={handleSubmit}>
-                送信
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSubmitting || !respondentName.trim()}
+              >
+                {isSubmitting ? '送信中...' : '送信'}
               </button>
               {submitError && (
                 <section>
