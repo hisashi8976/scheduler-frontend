@@ -22,17 +22,7 @@ type SubmitError = {
 
 function RespondPage() {
   const { publicId } = useParams()
-
-  if (!publicId) {
-    return (
-      <main>
-        <h1>エラー</h1>
-        <p>イベントIDが指定されていません。</p>
-      </main>
-    )
-  }
-
-  const encodedPublicId = encodeURIComponent(publicId)
+  const encodedPublicId = publicId ? encodeURIComponent(publicId) : ''
   const [eventData, setEventData] = useState<EventResponse | null>(null)
   const [fetchError, setFetchError] = useState<SubmitError | null>(null)
   const [respondentName, setRespondentName] = useState('')
@@ -44,6 +34,9 @@ function RespondPage() {
   const [copyMessage, setCopyMessage] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!publicId) {
+      return
+    }
     let isMounted = true
 
     const fetchEvent = async () => {
@@ -162,94 +155,105 @@ function RespondPage() {
 
   return (
     <main>
-      <h1>回答ページ</h1>
-      <p>イベントID: {publicId}</p>
-      {fetchError && (
-        <section>
-          <h2>取得エラー</h2>
-          <p>
-            status: {fetchError.status ?? 'unknown'} / message:{' '}
-            {fetchError.message}
-          </p>
-        </section>
-      )}
-      {eventData && (
-        <section>
-          <h2>{eventData.title}</h2>
-          <p>{eventData.description}</p>
-          <label>
-            回答者名
-            <input
-              type="text"
-              value={respondentName}
-              onChange={(event) => setRespondentName(event.target.value)}
-            />
-          </label>
-          <h3>候補一覧</h3>
-          <ul>
-            {eventData.candidates.map((candidate) => (
-              <li key={candidate.candidateSlotId}>
-                <div>candidateSlotId: {candidate.candidateSlotId}</div>
-                <div>
-                  {new Date(candidate.startAt).toLocaleString()} -{' '}
-                  {new Date(candidate.endAt).toLocaleString()}
-                </div>
-                <label>
-                  Availability
-                  <select
-                    value={availabilityById[candidate.candidateSlotId] ?? 'MAYBE'}
-                    onChange={(event) =>
-                      handleAvailabilityChange(
-                        candidate.candidateSlotId,
-                        event.target.value as Availability
-                      )
-                    }
-                  >
-                    <option value="OK">OK</option>
-                    <option value="MAYBE">MAYBE</option>
-                    <option value="NG">NG</option>
-                  </select>
-                </label>
-              </li>
-            ))}
-          </ul>
-          <button type="button" onClick={handleSubmit}>
-            送信
-          </button>
-          {submitError && (
+      {!publicId ? (
+        <>
+          <h1>エラー</h1>
+          <p>イベントIDが指定されていません。</p>
+        </>
+      ) : (
+        <>
+          <h1>回答ページ</h1>
+          <p>イベントID: {publicId}</p>
+          {fetchError && (
             <section>
-              <h3>送信エラー</h3>
+              <h2>取得エラー</h2>
               <p>
-                status: {submitError.status ?? 'unknown'} / message:{' '}
-                {submitError.message}
+                status: {fetchError.status ?? 'unknown'} / message:{' '}
+                {fetchError.message}
               </p>
             </section>
           )}
-          {editUrl && (
+          {eventData && (
             <section>
-              <h3>編集URL</h3>
-              <p>{editUrl}</p>
-              <button type="button" onClick={handleCopy}>
-                コピー
+              <h2>{eventData.title}</h2>
+              <p>{eventData.description}</p>
+              <label>
+                回答者名
+                <input
+                  type="text"
+                  value={respondentName}
+                  onChange={(event) => setRespondentName(event.target.value)}
+                />
+              </label>
+              <h3>候補一覧</h3>
+              <ul>
+                {eventData.candidates.map((candidate) => (
+                  <li key={candidate.candidateSlotId}>
+                    <div>candidateSlotId: {candidate.candidateSlotId}</div>
+                    <div>
+                      {new Date(candidate.startAt).toLocaleString()} -{' '}
+                      {new Date(candidate.endAt).toLocaleString()}
+                    </div>
+                    <label>
+                      Availability
+                      <select
+                        value={
+                          availabilityById[candidate.candidateSlotId] ?? 'MAYBE'
+                        }
+                        onChange={(event) =>
+                          handleAvailabilityChange(
+                            candidate.candidateSlotId,
+                            event.target.value as Availability
+                          )
+                        }
+                      >
+                        <option value="OK">OK</option>
+                        <option value="MAYBE">MAYBE</option>
+                        <option value="NG">NG</option>
+                      </select>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+              <button type="button" onClick={handleSubmit}>
+                送信
               </button>
-              {copyMessage && <p>{copyMessage}</p>}
+              {submitError && (
+                <section>
+                  <h3>送信エラー</h3>
+                  <p>
+                    status: {submitError.status ?? 'unknown'} / message:{' '}
+                    {submitError.message}
+                  </p>
+                </section>
+              )}
+              {editUrl && (
+                <section>
+                  <h3>編集URL</h3>
+                  <p>{editUrl}</p>
+                  <button type="button" onClick={handleCopy}>
+                    コピー
+                  </button>
+                  {copyMessage && <p>{copyMessage}</p>}
+                </section>
+              )}
             </section>
           )}
-        </section>
+          <nav>
+            <ul>
+              <li>
+                <Link to={`/e/${encodedPublicId}`}>回答</Link>
+              </li>
+              <li>
+                <Link to={`/e/${encodedPublicId}/results`}>結果</Link>
+              </li>
+              <li>
+                <Link to={`/e/${encodedPublicId}/admin`}>主催者</Link>
+              </li>
+            </ul>
+          </nav>
+        </>
       )}
-      <nav>
-        <ul>
-          <li>
-            <Link to={`/e/${encodedPublicId}`}>回答</Link>
-          </li>
-          <li>
-            <Link to={`/e/${encodedPublicId}/results`}>結果</Link>
-          </li>
-          <li>
-            <Link to={`/e/${encodedPublicId}/admin`}>主催者</Link>
-          </li>
-        </ul>
-      </nav>
     </main>
   )
 }
