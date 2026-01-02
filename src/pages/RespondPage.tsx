@@ -20,6 +20,34 @@ type SubmitError = {
   message: string
 }
 
+const isCandidateSlot = (value: unknown): value is CandidateSlot => {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+  const candidate = value as CandidateSlot
+  return (
+    typeof candidate.candidateSlotId === 'number' &&
+    typeof candidate.startAt === 'string' &&
+    typeof candidate.endAt === 'string'
+  )
+}
+
+const parseEventResponse = (value: unknown): EventResponse | null => {
+  if (!value || typeof value !== 'object') {
+    return null
+  }
+  const event = value as EventResponse
+  if (
+    typeof event.title !== 'string' ||
+    typeof event.description !== 'string' ||
+    !Array.isArray(event.candidates) ||
+    !event.candidates.every(isCandidateSlot)
+  ) {
+    return null
+  }
+  return event
+}
+
 function RespondPage() {
   const { publicId } = useParams()
   const encodedPublicId = publicId ? encodeURIComponent(publicId) : ''
@@ -29,6 +57,7 @@ function RespondPage() {
   const [availabilityById, setAvailabilityById] = useState<
     Record<number, Availability>
   >({})
+  const [isLoading, setIsLoading] = useState(false)
   const [submitError, setSubmitError] = useState<SubmitError | null>(null)
   const [editUrl, setEditUrl] = useState<string | null>(null)
   const [copyMessage, setCopyMessage] = useState<string | null>(null)
@@ -43,7 +72,10 @@ function RespondPage() {
     const fetchEvent = async () => {
       try {
         setFetchError(null)
-        const response = await fetch(`/api/events/${encodedPublicId}`)
+        setIsLoading(true)
+        const response = await fetch(
+          `/api/events/${encodeURIComponent(publicId)}`
+        )
         if (!response.ok) {
           let message = response.statusText
           try {
@@ -57,7 +89,17 @@ function RespondPage() {
           }
           return
         }
-        const data = (await response.json()) as EventResponse
+        const body = await response.json()
+        const data = parseEventResponse(body)
+        if (!data) {
+          if (isMounted) {
+            setFetchError({
+              status: null,
+              message: 'Unexpected response payload.',
+            })
+          }
+          return
+        }
         if (isMounted) {
           setEventData(data)
           setAvailabilityById(
@@ -78,6 +120,10 @@ function RespondPage() {
               error instanceof Error ? error.message : 'Unexpected error.',
           })
         }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
       }
     }
 
@@ -86,7 +132,19 @@ function RespondPage() {
     return () => {
       isMounted = false
     }
-  }, [encodedPublicId])
+  }, [publicId])
+
+  useEffect(() => {
+    if (!copyMessage) {
+      return
+    }
+    const timeout = window.setTimeout(() => {
+      setCopyMessage(null)
+    }, 3000)
+    return () => {
+      window.clearTimeout(timeout)
+    }
+  }, [copyMessage])
 
   const handleAvailabilityChange = (
     candidateSlotId: number,
@@ -168,8 +226,9 @@ function RespondPage() {
         <>
           <h1>回答ページ</h1>
           <p>イベントID: {publicId}</p>
+          {isLoading && <p>読み込み中...</p>}
           {fetchError && (
-            <section>
+            <section role="alert">
               <h2>取得エラー</h2>
               <p>
                 status: {fetchError.status ?? 'unknown'} / message:{' '}
@@ -181,14 +240,14 @@ function RespondPage() {
             <section>
               <h2>{eventData.title}</h2>
               <p>{eventData.description}</p>
-              <label>
-                回答者名
-                <input
-                  type="text"
-                  value={respondentName}
-                  onChange={(event) => setRespondentName(event.target.value)}
-                />
-              </label>
+              <label htmlFor="respondent-name">回答者名</label>
+              <input
+                id="respondent-name"
+                type="text"
+                aria-required="true"
+                value={respondentName}
+                onChange={(event) => setRespondentName(event.target.value)}
+              />
               <h3>候補一覧</h3>
               <ul>
                 {eventData.candidates.map((candidate) => (
@@ -198,24 +257,25 @@ function RespondPage() {
                       {new Date(candidate.startAt).toLocaleString()} -{' '}
                       {new Date(candidate.endAt).toLocaleString()}
                     </div>
-                    <label>
+                    <label htmlFor={`availability-${candidate.candidateSlotId}`}>
                       Availability
-                      <select
-                        value={
-                          availabilityById[candidate.candidateSlotId] ?? 'MAYBE'
-                        }
-                        onChange={(event) =>
-                          handleAvailabilityChange(
-                            candidate.candidateSlotId,
-                            event.target.value as Availability
-                          )
-                        }
-                      >
-                        <option value="OK">OK</option>
-                        <option value="MAYBE">MAYBE</option>
-                        <option value="NG">NG</option>
-                      </select>
                     </label>
+                    <select
+                      id={`availability-${candidate.candidateSlotId}`}
+                      value={
+                        availabilityById[candidate.candidateSlotId] ?? 'MAYBE'
+                      }
+                      onChange={(event) =>
+                        handleAvailabilityChange(
+                          candidate.candidateSlotId,
+                          event.target.value as Availability
+                        )
+                      }
+                    >
+                      <option value="OK">OK</option>
+                      <option value="MAYBE">MAYBE</option>
+                      <option value="NG">NG</option>
+                    </select>
                   </li>
                 ))}
               </ul>
@@ -227,7 +287,7 @@ function RespondPage() {
                 {isSubmitting ? '送信中...' : '送信'}
               </button>
               {submitError && (
-                <section>
+                <section role="alert">
                   <h3>送信エラー</h3>
                   <p>
                     status: {submitError.status ?? 'unknown'} / message:{' '}
