@@ -20,6 +20,11 @@ type SubmitError = {
   message: string
 }
 
+const formatDateTime = (dateString: string): string => {
+  const date = new Date(dateString)
+  return Number.isNaN(date.getTime()) ? '無効な日時' : date.toLocaleString()
+}
+
 const isCandidateSlot = (value: unknown): value is CandidateSlot => {
   if (!value || typeof value !== 'object') {
     return false
@@ -249,36 +254,40 @@ function RespondPage() {
                 onChange={(event) => setRespondentName(event.target.value)}
               />
               <h3>候補一覧</h3>
-              <ul>
-                {eventData.candidates.map((candidate) => (
-                  <li key={candidate.candidateSlotId}>
-                    <div>candidateSlotId: {candidate.candidateSlotId}</div>
-                    <div>
-                      {new Date(candidate.startAt).toLocaleString()} -{' '}
-                      {new Date(candidate.endAt).toLocaleString()}
-                    </div>
-                    <label htmlFor={`availability-${candidate.candidateSlotId}`}>
-                      Availability
-                    </label>
-                    <select
-                      id={`availability-${candidate.candidateSlotId}`}
-                      value={
-                        availabilityById[candidate.candidateSlotId] ?? 'MAYBE'
-                      }
-                      onChange={(event) =>
-                        handleAvailabilityChange(
-                          candidate.candidateSlotId,
-                          event.target.value as Availability
-                        )
-                      }
-                    >
-                      <option value="OK">OK</option>
-                      <option value="MAYBE">MAYBE</option>
-                      <option value="NG">NG</option>
-                    </select>
-                  </li>
-                ))}
-              </ul>
+              {eventData.candidates.length === 0 ? (
+                <p>候補日時が登録されていません。</p>
+              ) : (
+                <ul>
+                  {eventData.candidates.map((candidate, index) => (
+                    <li key={candidate.candidateSlotId}>
+                      <div>候補 {index + 1}</div>
+                      <div>
+                        {formatDateTime(candidate.startAt)} -{' '}
+                        {formatDateTime(candidate.endAt)}
+                      </div>
+                      <label htmlFor={`availability-${candidate.candidateSlotId}`}>
+                        Availability
+                      </label>
+                      <select
+                        id={`availability-${candidate.candidateSlotId}`}
+                        value={
+                          availabilityById[candidate.candidateSlotId] ?? 'MAYBE'
+                        }
+                        onChange={(event) =>
+                          handleAvailabilityChange(
+                            candidate.candidateSlotId,
+                            event.target.value as Availability
+                          )
+                        }
+                      >
+                        <option value="OK">OK</option>
+                        <option value="MAYBE">MAYBE</option>
+                        <option value="NG">NG</option>
+                      </select>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <button
                 type="button"
                 onClick={handleSubmit}
@@ -310,7 +319,9 @@ function RespondPage() {
           <nav>
             <ul>
               <li>
-                <Link to={`/e/${encodedPublicId}`}>回答</Link>
+                <Link to={`/e/${encodedPublicId}`} aria-current="page">
+                  回答
+                </Link>
               </li>
               <li>
                 <Link to={`/e/${encodedPublicId}/results`}>結果</Link>
