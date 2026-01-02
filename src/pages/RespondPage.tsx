@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import '../styles/RespondPage.css'
 
 type Availability = 'OK' | 'MAYBE' | 'NG'
@@ -56,6 +56,7 @@ const parseEventResponse = (value: unknown): EventResponse | null => {
 
 function RespondPage() {
   const { publicId } = useParams()
+  const location = useLocation()
   const encodedPublicId = publicId ? encodeURIComponent(publicId) : ''
   const [eventData, setEventData] = useState<EventResponse | null>(null)
   const [fetchError, setFetchError] = useState<SubmitError | null>(null)
@@ -256,6 +257,8 @@ function RespondPage() {
     }
   }
 
+  const isCurrentPath = (path: string) => location.pathname === path
+
   return (
     <main className="respond-page">
       {!publicId ? (
@@ -267,16 +270,46 @@ function RespondPage() {
         <div className="respond-page__container">
           <nav className="respond-page__tabs" aria-label="イベントナビゲーション">
             <Link
-              className="respond-page__tab respond-page__tab--active"
+              className={`respond-page__tab ${
+                isCurrentPath(`/e/${encodedPublicId}`)
+                  ? 'respond-page__tab--active'
+                  : ''
+              }`}
               to={`/e/${encodedPublicId}`}
-              aria-current="page"
+              aria-current={
+                isCurrentPath(`/e/${encodedPublicId}`) ? 'page' : undefined
+              }
             >
               回答
             </Link>
-            <Link className="respond-page__tab" to={`/e/${encodedPublicId}/results`}>
+            <Link
+              className={`respond-page__tab ${
+                isCurrentPath(`/e/${encodedPublicId}/results`)
+                  ? 'respond-page__tab--active'
+                  : ''
+              }`}
+              to={`/e/${encodedPublicId}/results`}
+              aria-current={
+                isCurrentPath(`/e/${encodedPublicId}/results`)
+                  ? 'page'
+                  : undefined
+              }
+            >
               結果
             </Link>
-            <Link className="respond-page__tab" to={`/e/${encodedPublicId}/admin`}>
+            <Link
+              className={`respond-page__tab ${
+                isCurrentPath(`/e/${encodedPublicId}/admin`)
+                  ? 'respond-page__tab--active'
+                  : ''
+              }`}
+              to={`/e/${encodedPublicId}/admin`}
+              aria-current={
+                isCurrentPath(`/e/${encodedPublicId}/admin`)
+                  ? 'page'
+                  : undefined
+              }
+            >
               主催者
             </Link>
           </nav>
