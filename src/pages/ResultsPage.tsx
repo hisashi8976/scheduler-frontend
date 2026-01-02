@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 
 function ResultsPage() {
   const { publicId } = useParams()
+  const encodedPublicId = publicId ? encodeURIComponent(publicId) : ''
 
   return (
     <main>
@@ -11,13 +12,13 @@ function ResultsPage() {
       <nav>
         <ul>
           <li>
-            <Link to={`/e/${publicId}`}>回答</Link>
+            <Link to={`/e/${encodedPublicId}`}>回答</Link>
           </li>
           <li>
-            <Link to={`/e/${publicId}/results`}>結果</Link>
+            <Link to={`/e/${encodedPublicId}/results`}>結果</Link>
           </li>
           <li>
-            <Link to={`/e/${publicId}/admin`}>主催者</Link>
+            <Link to={`/e/${encodedPublicId}/admin`}>主催者</Link>
           </li>
         </ul>
       </nav>
