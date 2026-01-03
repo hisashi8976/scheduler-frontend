@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 type CandidateResult = {
@@ -125,13 +125,6 @@ function ResultsPage() {
     }
   }, [publicId])
 
-  const candidateTotals = useMemo(() => {
-    return results?.candidates.map((candidate) => {
-      const total = candidate.ok + candidate.maybe + candidate.ng
-      return { id: candidate.candidateSlotId, total }
-    })
-  }, [results])
-
   if (!publicId) {
     return (
       <main>
@@ -185,10 +178,7 @@ function ResultsPage() {
             ) : (
               <div style={{ display: 'grid', gap: '12px' }}>
                 {results.candidates.map((candidate, index) => {
-                  const total =
-                    candidateTotals?.find(
-                      (item) => item.id === candidate.candidateSlotId
-                    )?.total ?? 0
+                  const total = candidate.ok + candidate.maybe + candidate.ng
                   const okRatio = total ? (candidate.ok / total) * 100 : 0
                   const maybeRatio = total
                     ? (candidate.maybe / total) * 100
