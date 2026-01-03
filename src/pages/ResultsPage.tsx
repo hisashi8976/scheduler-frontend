@@ -79,7 +79,7 @@ function ResultsPage() {
         setFetchError(null)
         setIsLoading(true)
         const response = await fetch(
-          `/api/events/${encodeURIComponent(publicId)}/results`,
+          `/api/events/${encodedPublicId}/results`,
           {
             signal: controller.signal,
           }
@@ -123,7 +123,7 @@ function ResultsPage() {
     return () => {
       controller.abort()
     }
-  }, [publicId])
+  }, [encodedPublicId, publicId])
 
   if (!publicId) {
     return (
@@ -231,6 +231,8 @@ function ResultsPage() {
                               width: `${okRatio}%`,
                               background: '#22c55e',
                             }}
+                            role="img"
+                            aria-label={`OK: ${candidate.ok}`}
                           />
                         )}
                         {maybeRatio > 0 && (
@@ -239,6 +241,8 @@ function ResultsPage() {
                               width: `${maybeRatio}%`,
                               background: '#f59e0b',
                             }}
+                            role="img"
+                            aria-label={`MAYBE: ${candidate.maybe}`}
                           />
                         )}
                         {ngRatio > 0 && (
@@ -247,6 +251,8 @@ function ResultsPage() {
                               width: `${ngRatio}%`,
                               background: '#ef4444',
                             }}
+                            role="img"
+                            aria-label={`NG: ${candidate.ng}`}
                           />
                         )}
                       </div>
@@ -275,6 +281,9 @@ function ResultsPage() {
             ) : (
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <caption style={{ textAlign: 'left', marginBottom: '8px' }}>
+                    候補日時ごとの回答集計
+                  </caption>
                   <thead>
                     <tr>
                       <th style={{ textAlign: 'left', padding: '8px' }}>
