@@ -319,6 +319,11 @@ function RespondPage() {
               <p className="respond-page__subtitle">
                 出欠回答を入力してください。
               </p>
+              <p className="respond-page__subtitle">
+                <Link to={`/e/${encodedPublicId}/results`}>
+                  集計結果を見る
+                </Link>
+              </p>
             </div>
             <div className="respond-page__event-id">
               <span>イベントID</span>
