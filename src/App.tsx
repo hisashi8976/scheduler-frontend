@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
-import AdminPage from './pages/AdminPage'
+import AdminResponsesPage from './pages/AdminResponsesPage'
 import EditPage from './pages/EditPage'
 import HomePage from './pages/HomePage'
 import RespondPage from './pages/RespondPage'
@@ -24,7 +24,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/e/:publicId" element={<RespondPage />} />
           <Route path="/e/:publicId/results" element={<ResultsPage />} />
-          <Route path="/e/:publicId/admin" element={<AdminPage />} />
+          <Route path="/e/:publicId/admin" element={<AdminResponsesPage />} />
           <Route path="/e/:publicId/edit/:editKey" element={<EditPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
